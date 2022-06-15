@@ -2,14 +2,13 @@ package tracer
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
-
-	"github.com/rs/zerolog"
 )
 
 var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
@@ -17,7 +16,7 @@ var RE_detectFn = regexp.MustCompile(`\$FN`)
 
 type Options struct {
 	DisableTracing bool
-	CustomLogger   *zerolog.Logger
+	CustomLogger   *log.Logger
 
 	DisableDepthValue bool
 	SpacesPerIndent   int `default:"2"`
@@ -40,8 +39,8 @@ func New(opts *Options) (func(string), func(...interface{}) string) {
 	}
 
 	if option.CustomLogger == nil {
-		logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-		option.CustomLogger = &logger
+		logger := log.New(os.Stderr, "", 0)
+		option.CustomLogger = logger
 	}
 
 	reflectedType := reflect.TypeOf(option)
@@ -99,13 +98,13 @@ func New(opts *Options) (func(string), func(...interface{}) string) {
 
 		traceMessage = RE_detectFn.ReplaceAllString(traceMessage, fnName)
 
-		option.CustomLogger.Trace().Msgf("%s%s%s\n", _spacify(), option.EnterMessage, traceMessage)
+		option.CustomLogger.Printf("%s%s%s\n", _spacify(), option.EnterMessage, traceMessage)
 		return traceMessage
 	}
 
 	_exit := func(s string) {
 		_decrementDepth()
-		option.CustomLogger.Trace().Msgf("%s%s%s\n", _spacify(), option.ExitMessage, s)
+		option.CustomLogger.Printf("%s%s%s\n", _spacify(), option.ExitMessage, s)
 	}
 
 	return _exit, _enter
