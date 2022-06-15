@@ -85,6 +85,8 @@ func New(opts *Options) *Tracer {
 		option.currentDepth += 1
 	}
 
+	baseMessage := "%s%s%s\n"
+
 	_enter := func(args ...interface{}) string {
 		defer _incrementDepth()
 
@@ -103,13 +105,13 @@ func New(opts *Options) *Tracer {
 
 		traceMessage = RE_detectFn.ReplaceAllString(traceMessage, fnName)
 
-		option.CustomLogger.Printf("%s%s%s\n", _spacify(), option.EnterMessage, traceMessage)
+		option.CustomLogger.Printf(baseMessage, _spacify(), option.EnterMessage, traceMessage)
 		return traceMessage
 	}
 
 	_exit := func(s string) {
 		_decrementDepth()
-		option.CustomLogger.Printf("%s%s%s\n", _spacify(), option.ExitMessage, s)
+		option.CustomLogger.Printf(baseMessage, _spacify(), option.ExitMessage, s)
 	}
 
 	return &Tracer{EnterFn: _enter, ExitFn: _exit}
