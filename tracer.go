@@ -117,6 +117,6 @@ func New(opts *Options) *Tracer {
 	return &Tracer{EnterFn: _enter, ExitFn: _exit}
 }
 
-func (tr *Tracer) Trace() {
+func (tr *Tracer) Trace(args ...interface{}) {
 	defer tr.ExitFn(tr.EnterFn())
 }
