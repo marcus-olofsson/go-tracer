@@ -44,7 +44,7 @@ func New(opts *Options) *Tracer {
 	}
 
 	if option.CustomLogger == nil {
-		logger := log.New(os.Stderr, "", 0)
+		logger := log.New(os.Stdout, "", 0)
 		option.CustomLogger = logger
 	}
 
