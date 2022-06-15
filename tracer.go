@@ -14,6 +14,11 @@ import (
 var RE_stripFnPreamble = regexp.MustCompile(`^.*\.(.*)$`)
 var RE_detectFn = regexp.MustCompile(`\$FN`)
 
+type Tracer struct {
+	EnterFn func(...interface{}) string
+	ExitFn  func(string)
+}
+
 type Options struct {
 	DisableTracing bool
 	CustomLogger   *log.Logger
@@ -28,14 +33,14 @@ type Options struct {
 	currentDepth   int
 }
 
-func New(opts *Options) (func(string), func(...interface{}) string) {
+func New(opts *Options) *Tracer {
 	var option Options
 	if opts != nil {
 		option = *opts
 	}
 
 	if option.DisableTracing {
-		return func(string) {}, func(i ...interface{}) string { return "" }
+		return &Tracer{ExitFn: func(string) {}, EnterFn: func(...interface{}) string { return "" }}
 	}
 
 	if option.CustomLogger == nil {
@@ -84,7 +89,7 @@ func New(opts *Options) (func(string), func(...interface{}) string) {
 		defer _incrementDepth()
 
 		fnName := "<unknown>"
-		pc, _, _, ok := runtime.Caller(1)
+		pc, _, _, ok := runtime.Caller(2)
 		if ok {
 			fnName = RE_stripFnPreamble.ReplaceAllString(runtime.FuncForPC(pc).Name(), "$1")
 		}
@@ -107,5 +112,9 @@ func New(opts *Options) (func(string), func(...interface{}) string) {
 		option.CustomLogger.Printf("%s%s%s\n", _spacify(), option.ExitMessage, s)
 	}
 
-	return _exit, _enter
+	return &Tracer{EnterFn: _enter, ExitFn: _exit}
+}
+
+func (tr *Tracer) Trace() {
+	defer tr.ExitFn(tr.EnterFn())
 }
