@@ -27,7 +27,7 @@ type Options struct {
 	SpacesPerIndent   int `default:"2"`
 
 	EnterMessage string `default:"ENTER: "`
-	ExitMessage  string `deafult:"EXIT: "`
+	ExitMessage  string `default:"EXIT: "`
 
 	DisableNesting bool
 	currentDepth   int
